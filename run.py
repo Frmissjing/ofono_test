@@ -3,64 +3,23 @@ import os
 import sys
 import pathlib
 import importlib
-import server_api
 import subprocess
 import signal
 import time
 import shlex
+import traceback
+import threading
 
-global ofono_Terminator,trace_fd
+
+global ofonoProcess,trace_fd
 global dirlist 
 dirlist = {"case", "common"}
 
 
-def run_ofono():
-    global ofono_Terminator,dirlist
-
-    cmd = shlex.split("./ofonod -nd '*'")
-    trace_dir = "./trace/"
-    trace_name = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    print(trace_name)
-    trace_fd = open("{}{}.txt".format(trace_dir,trace_name), 'a')
-    ofono_Terminator = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd="/home/dreamhigh/code/ofono_vs/ofono/src/")
-    ofono_Terminator.wait(3)
-    # ofono_Terminator = subprocess.Popen("./ofonod -nd '*'",stdout=trace_fd, shell=True, cwd="/home/dreamhigh/code/ofono_vs/ofono/src/")
-    print("{}: pid={}".format(sys._getframe().f_code.co_name,ofono_Terminator.pid))
-
-
-def run_server():
-    pass
-
-def close_ofono():
-    global ofono_Terminator
-    global trace_fd
-
-    if ofono_Terminator != None:
-        print("{}: pid={}".format(sys._getframe().f_code.co_name,ofono_Terminator.pid))
-        os.kill(ofono_Terminator.pid, signal.SIGTERM)
-
-    if trace_fd != None:
-        trace_fd.close()
-
-def close_server():
-    pass
-
-
-
-def test_init():
-    #启动Ofono
-    run_ofono()
-    #启动server
-    run_server()
-    
-
-def test_deinit():
-    #关闭Ofono
-    close_ofono()
-    #关闭server
-    close_server()
-
-
+'''
+description: 添加python脚本运行的lib路径和case路径
+return {*}
+'''
 def add_sys_path():
     global dirlist
     path = os.getcwd()
@@ -69,6 +28,96 @@ def add_sys_path():
         print(path1)
         sys.path.append(path1)
 
+
+
+'''
+description: 启动ofono应用程序
+param {*} CaseName case名称
+return {*}
+'''
+def run_ofono(CaseName):
+    global ofonoProcess, trace_fd, dirlist
+    # 启动命令
+    cmd = shlex.split("./ofonod -nd '*'")
+    # 设置trace路径和名称
+    trace_dir = "./trace"
+    trace_name = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+    # 启动ofono，并将ofono的trace打印到tarce目录
+    with open("{}/{}_{}.txt".format(trace_dir, CaseName, trace_name), 'a') as trace_fd:
+        ofonoProcess = subprocess.Popen(cmd, stdout=trace_fd, stderr=trace_fd, cwd="/home/dreamhigh/code/ofono_vs/ofono/src/")
+    print("{}: pid={}".format(sys._getframe().f_code.co_name,ofonoProcess.pid))
+
+
+'''
+description: 
+return {*}
+'''
+def close_ofono():
+    global ofonoProcess
+    global trace_fd
+
+    if ofonoProcess != None:
+        print("{}: pid={}".format(sys._getframe().f_code.co_name, ofonoProcess.pid))
+        os.kill(ofonoProcess.pid, signal.SIGINT)
+
+    if trace_fd != None:
+        print("{}: file {} closed.".format(sys._getframe().f_code.co_name, trace_fd.name))
+        trace_fd.close()
+
+'''
+description: 启动脚本的server
+return {*}
+'''
+def InitInnoServer():
+    # 创建Innoserver线程
+    innoServer = InnoServer()
+    pass
+
+'''
+description: 启动脚本的server
+return {*}
+'''
+def run_server():
+    # 创建Innoserver线程
+    InnoServerThd = threading.Thread(target = InitInnoServer)
+
+
+'''
+description: 
+return {*}
+'''
+def close_server():
+    pass
+
+
+
+'''
+description: 脚本初始化:启动ofono和server
+param {*} filename 运行的case名称
+return {*}
+'''
+def test_init(filename):
+    #启动Ofono
+    run_ofono(filename)
+    #启动server
+    run_server()
+    
+'''
+description: 
+return {*}
+'''
+def test_deinit():
+    #关闭Ofono
+    close_ofono()
+    #关闭server
+    close_server()
+
+
+'''
+description: 
+param {*} name
+return {*}
+'''
 def seek_files(name):
     """根据输入的文件名称查找对应的文件夹有无改文件，有则输出文件地址"""
     path = os.getcwd()
@@ -85,10 +134,32 @@ def seek_files(name):
             return filepath
     return None
 
+
+'''
+description: 
+param {*} filename
+return {*}
+'''
 def run_case(filename):
     ret = importlib.import_module(filename)
-    eval("ret.{}".format(filename))()    
+    try:
+        # 启动ofono 和 server
+        test_init(filename)
+        # dealy 3s
+        time.sleep(3)
+        # 运行case
+        eval("ret.{}".format(filename))()
+    except Exception as e:
+        traceback.print_exc()
+    
+    #case结束，关闭ofono和server
+    test_deinit()
 
+
+'''
+description: 
+return {*}
+'''
 if __name__ == "__main__":
     #add path 
     add_sys_path()
@@ -96,12 +167,10 @@ if __name__ == "__main__":
     casename = input("请输入需要运行的case名称:")
     filename = "{}.py".format(casename)
 
-    # 查找casetest
+    # 查找case
     filepath = seek_files(filename)
 
-    #启动ofono 
-
-    if filename != None:
+    if filename != None and os.path.isfile(filepath):
         run_case(casename)
     else:
         print("not find file")

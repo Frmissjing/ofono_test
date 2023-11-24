@@ -1,3 +1,13 @@
+'''
+Author: Frmissjing 892153623@qq.com
+Date: 2023-11-22 18:15:08
+LastEditors: Frmissjing 892153623@qq.com
+LastEditTime: 2023-11-23 14:08:55
+FilePath: /ofono_test/common/modem_api.py
+Description: 
+
+Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+'''
 #!/usr/bin/python3
 import common_api
 import dbus
@@ -28,20 +38,6 @@ class Ofono_Modem(object):
     def SetProperty(self, property, value):
        return self.interface.SetProperty(property, value)
 
-# Function     def modem_powerd(self, powerd):
-    def modem_powerd(self, powerd):
-        try:
-            self.SetProperty("Powered", dbus.Boolean(powerd))
-        except:
-            print("modem Powered={} fail".format(powerd))
-
-
-    def modem_online(self, online):
-        try:
-            self.SetProperty("Online",dbus.Boolean(online))
-        except:
-            print("modem Online={} fail".format(online))
-
 
 # Signals		PropertyChanged(string name, variant value)
 
@@ -52,7 +48,13 @@ class Ofono_Modem(object):
             self.interface.connect_to_signal("PropertyChanged", func)
 
 
+# Function     def modem_powerd(self, powerd):
+    def modem_powerd(self, powerd):
+        return self.SetProperty("Powered", dbus.Boolean(powerd))
 
+
+    def modem_online(self, online):
+        return self.SetProperty("Online",dbus.Boolean(online))
 
 
 

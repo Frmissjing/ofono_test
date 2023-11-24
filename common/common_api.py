@@ -1,4 +1,15 @@
 #!/usr/bin/python3
+'''
+Author: Frmissjing 892153623@qq.com
+Date: 2023-11-22 18:15:08
+LastEditors: Frmissjing 892153623@qq.com
+LastEditTime: 2023-11-24 16:52:34
+FilePath: /ofono_test/common/common_api.py
+Description: 
+
+Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+'''
+
 import server_api
 import subprocess
 import os
@@ -7,60 +18,27 @@ import time
 import shlex
 import sys
 
-global ofono_Terminator,trace_fd
 
-def run_ofono():
-    global ofono_Terminator
-    global trace_fd
-
-    cmd = shlex.split("./ofonod -nd '*'")
-    trace_dir = "./trace/"
-    trace_name = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    print(trace_name)
-    trace_fd = open("{}{}.txt".format(trace_dir,trace_name), 'a')
-    ofono_Terminator = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd="/home/dreamhigh/code/ofono_vs/ofono/src/")
-    ofono_Terminator.wait(3)
-    # ofono_Terminator = subprocess.Popen("./ofonod -nd '*'",stdout=trace_fd, shell=True, cwd="/home/dreamhigh/code/ofono_vs/ofono/src/")
-    print("{}: pid={}".format(sys._getframe().f_code.co_name,ofono_Terminator.pid))
-
-
-def run_server():
+def debug():
     pass
 
-def close_ofono():
-    global ofono_Terminator
-    global trace_fd
-
-    if ofono_Terminator != None:
-        print("{}: pid={}".format(sys._getframe().f_code.co_name,ofono_Terminator.pid))
-        os.kill(ofono_Terminator.pid, signal.SIGTERM)
-
-    if trace_fd != None:
-        trace_fd.close()
-
-def close_server():
+def error():
     pass
-
-
-
-def test_init():
-    #启动Ofono
-    run_ofono()
-    #启动server
-    run_server()
     
-
-def test_deinit():
-    #关闭Ofono
-    close_ofono()
-    #关闭server
-    close_server()
-
+def wait():
     pass
 
 
-if __name__ == "__main__":
-    test_init()
-    time.sleep(5)
-    test_deinit()
+def expect_recv_at(conn, data, Timer=10):
+    pass
+
+
+def respond():
+    pass
+
+
+def unsolicated():
+    pass
+
+
 

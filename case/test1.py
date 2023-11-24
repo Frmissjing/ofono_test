@@ -1,13 +1,20 @@
+'''
+Author: Frmissjing 892153623@qq.com
+Date: 2023-11-22 18:15:08
+LastEditors: Frmissjing 892153623@qq.com
+LastEditTime: 2023-11-23 13:52:13
+FilePath: /ofono_test/case/test1.py
+Description: 
+
+Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+'''
 #!/usr/bin/python3
-import common_api
 import Manager_api
 import modem_api
 import dbus
 
 
 def test1():
-
-    common_api.test_init()
 
     bus = dbus.SystemBus()
 
@@ -22,5 +29,3 @@ def test1():
             break
 
     innosim.modem_powerd(True)
-
-    common_api.test_deinit()
