@@ -9,7 +9,7 @@ import time
 import shlex
 import traceback
 import threading
-
+import server_api
 
 global ofonoProcess,trace_fd
 global dirlist 
@@ -70,7 +70,7 @@ return {*}
 '''
 def InitInnoServer():
     # 创建Innoserver线程
-    innoServer = InnoServer()
+    innoServer = server_api.InnoServer()
     pass
 
 '''
@@ -119,7 +119,7 @@ param {*} name
 return {*}
 '''
 def seek_files(name):
-    """根据输入的文件名称查找对应的文件夹有无改文件，有则输出文件地址"""
+    """根据输入的文件名称查找对应的文件夹有无该文件，有则输出文件地址"""
     path = os.getcwd()
     print(path)
     path = "{}/{}".format(path,"case")
